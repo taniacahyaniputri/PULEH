@@ -1,0 +1,1168 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PULEH | Dashboard Konselor</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+:root{
+  --wine:#75182d;
+  --wine2:#9b3450;
+  --gold:#e8bd72;
+  --cream:#fff8ef;
+  --paper:#fffdfb;
+  --ink:#49202a;
+  --muted:#927d7c;
+  --line:#efdfd8;
+  --green:#39856d;
+  --orange:#e9943b;
+  --red:#cb4354;
+  --shadow:0 8px 25px #5a263010;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;background:#f5eee9;color:var(--ink);
+  font-family:"DM Sans",sans-serif;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--gold);outline-offset:2px
+}
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  width:225px;flex-shrink:0;min-height:100vh;
+  height:100vh;position:sticky;top:0;overflow-y:auto;
+  background:linear-gradient(180deg,#641326,#8d1d39 68%,#581326);
+  color:white;z-index:10;display:flex;flex-direction:column
+}
+.brand{text-align:center;padding:22px 12px 10px}
+.brand-logo{
+  width:65px;height:65px;border:2px solid var(--gold);
+  border-radius:50%;display:grid;place-items:center;
+  margin:auto;color:var(--gold);font-size:35px;
+  background:#ffffff10
+}
+.brand h1{
+  font:800 30px "Playfair Display";
+  letter-spacing:3px;margin:8px 0 2px
+}
+.brand p{font-size:9px;line-height:1.6;margin:0;color:#f5dfd1}
+.ornament{
+  text-align:center;color:var(--gold);margin:12px 18px;
+  padding:9px;border-top:1px solid #e8bd7270;
+  border-bottom:1px solid #e8bd7270
+}
+.nav{padding:8px 12px;display:grid;gap:5px}
+.nav button{
+  border:0;background:transparent;color:white;
+  padding:11px 12px;border-radius:9px;text-align:left;
+  font-size:11px;font-weight:600
+}
+.nav button:hover{background:#ffffff20}
+.nav button.active{background:#fff0d1;color:var(--wine)}
+.nav-label{
+  font-size:8px;letter-spacing:1.5px;color:#e9bd72;
+  padding:12px 10px 4px
+}
+.sidebar-bottom{
+  margin-top:auto;text-align:center;padding:18px 8px;
+  color:#f8dfb9;font-size:9px;line-height:1.6
+}
+
+/* MAIN */
+.main{flex:1;min-width:0}
+.topbar{
+  height:68px;background:#fffdfb;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:15px;padding:0 25px
+}
+.search{
+  max-width:450px;width:55%;height:37px;
+  border:1px solid var(--line);border-radius:30px;
+  background:white;display:flex;align-items:center;padding:0 13px
+}
+.search input{border:0;outline:0;width:100%;font-size:11px}
+.profile{display:flex;align-items:center;gap:9px;font-size:10px}
+.avatar{
+  width:35px;height:35px;border-radius:50%;
+  display:grid;place-items:center;background:#f5e6e1;font-size:19px
+}
+.profile small{display:block;color:var(--muted);margin-top:3px}
+.content{padding:17px;max-width:1700px;margin:auto}
+.page{display:none}
+.page.active{display:block}
+
+/* HERO */
+.hero{
+  min-height:230px;padding:30px;border-radius:16px;color:white;
+  position:relative;overflow:hidden;
+  background:
+    linear-gradient(90deg,#3e1b34ee,#71334da8 65%,#9a4d5d70),
+    url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=85") center/cover
+}
+.hero-copy{position:relative;z-index:2;max-width:650px}
+.kicker{font-size:9px;letter-spacing:2px;color:#f3d59c}
+.hero h1{font:700 35px "Playfair Display";margin:9px 0}
+.hero h1 em{color:#f3c66f}
+.hero p{font-size:12px;line-height:1.8}
+.hero-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:17px}
+.hero-pills span{
+  border:1px solid #ffffff80;border-radius:20px;
+  padding:7px 12px;font-size:9px
+}
+.hero-decoration{
+  position:absolute;right:6%;bottom:-12px;font-size:100px;opacity:.8
+}
+
+/* COMPONENTS */
+.panel,.card{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:16px;padding:17px;box-shadow:var(--shadow)
+}
+.section-head{
+  display:flex;justify-content:space-between;
+  align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px
+}
+h2{font:700 17px "Playfair Display";color:var(--wine);margin:0}
+h3{font:700 15px "Playfair Display";color:var(--wine)}
+.muted{font-size:10px;color:var(--muted);line-height:1.7}
+.workflow{margin-top:13px}
+.stages{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.stage{
+  text-align:left;position:relative;min-height:112px;padding:12px;
+  border:1px solid #efddd6;border-radius:12px;
+  background:linear-gradient(130deg,#fff9f4,#f9e9e4);
+  color:var(--wine);transition:.2s
+}
+.stage:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.stage b{
+  display:grid;place-items:center;width:22px;height:22px;
+  border-radius:50%;background:var(--wine2);color:white;font-size:10px
+}
+.stage strong{display:block;font-size:12px;margin-top:8px}
+.stage small{display:block;font-size:9px;margin-top:4px}
+.stage span{position:absolute;right:8px;bottom:6px;font-size:29px}
+
+.dashboard-grid{
+  display:grid;grid-template-columns:1fr 1.55fr 1fr;
+  gap:12px;margin-top:13px;align-items:start
+}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.stat{border-radius:12px;padding:13px;min-height:102px}
+.stat span{font-size:19px}
+.stat b{
+  display:block;font:700 25px "Playfair Display";
+  margin:4px 0;color:#5c1729
+}
+.stat small{font-size:9px}
+.rose{background:#f9e7ed}
+.amber{background:#fff1df}
+.blue{background:#e7f0f8}
+.violet{background:#f0e9fa}
+#homeMap{height:330px;width:100%;border-radius:12px;z-index:1}
+#fullMap{height:480px;width:100%;border-radius:12px;z-index:1}
+.legend{display:flex;gap:13px;flex-wrap:wrap;margin-top:10px;font-size:9px;color:var(--muted)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+.red{background:var(--red)}
+.orange{background:var(--orange)}
+.green{background:var(--green)}
+.quick{
+  padding:15px;border-radius:14px;
+  background:linear-gradient(145deg,#8c1d39,#5d1429)
+}
+.quick h2{color:#fff2dc;margin-bottom:11px}
+.quick button{
+  width:100%;border:1px solid #f4ddd3;border-radius:20px;
+  padding:10px;background:#fffaf4;color:#602032;
+  text-align:left;font-size:10px;font-weight:700;margin:3px 0
+}
+.quick button:hover{background:#ffe8c9}
+.info{margin-top:12px}
+.info p{font-size:11px;line-height:1.7;color:var(--muted)}
+.info a{font-size:10px;font-weight:700;color:var(--wine)}
+.progress-panel{margin-top:13px}
+.progress-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;margin:14px 0 22px
+}
+.progress-box{
+  background:#fff5ef;border:1px solid #f1e0d8;
+  border-radius:12px;padding:14px
+}
+.progress-box span{font-size:10px;font-weight:800;color:var(--wine)}
+.progress-box b{
+  display:block;font:700 25px "Playfair Display";
+  margin:6px 0;color:#5c1729
+}
+.progress-box small{font-size:9px;color:var(--muted)}
+.activity-row{
+  display:grid;grid-template-columns:100px 1fr auto;
+  gap:10px;align-items:center;padding:11px 0;
+  border-bottom:1px solid var(--line);font-size:10px
+}
+.activity-row b{color:var(--wine)}
+.activity-row small{color:var(--muted)}
+
+/* DETAIL */
+.detail-hero{
+  border-radius:16px;padding:27px 30px;color:white;
+  background:linear-gradient(115deg,#68152d,#a3415b)
+}
+.detail-hero .kicker{color:#f4d59b}
+.detail-hero h1{font:700 29px "Playfair Display";margin:8px 0}
+.detail-hero p{font-size:11px;line-height:1.7;margin:0}
+.detail-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:13px;margin-top:14px
+}
+.card h3{margin:0 0 10px}
+.card p,.card li{font-size:11px;line-height:1.8;color:#755f64}
+.card.full{grid-column:1/-1}
+.card label{display:block;font-size:10px;font-weight:700;margin:12px 0 6px}
+.card input,.card select,.card textarea{
+  width:100%;padding:11px;border:1px solid #eadbd8;
+  border-radius:9px;background:#fffdfb;font-size:11px
+}
+.card textarea{resize:vertical}
+.primary-btn,.secondary-btn{
+  border:0;border-radius:9px;padding:11px 16px;
+  color:white;background:var(--wine);font-size:10px;
+  font-weight:700;margin-top:13px
+}
+.primary-btn:hover{background:var(--wine2)}
+.secondary-btn{background:#3267a4}
+.hint{
+  display:block;background:#fff4e6;color:#795a49;
+  border-radius:9px;padding:11px;font-size:10px;
+  line-height:1.7;margin-top:12px
+}
+.message{font-size:10px;color:var(--green);margin-top:10px;line-height:1.7}
+.coverage-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 0;border-bottom:1px solid var(--line)
+}
+.coverage-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.coverage-item div{flex:1}
+.coverage-item b,.coverage-item small{display:block}
+.coverage-item b{font-size:11px;color:var(--wine)}
+.coverage-item small{font-size:9px;color:var(--muted);margin-top:3px}
+.coverage-item em{font-size:9px;font-style:normal;color:#95683e;text-align:right}
+.record{
+  border:1px solid var(--line);border-radius:12px;
+  background:#fffaf6;padding:14px;margin:10px 0
+}
+.record h4{margin:0 0 8px;color:var(--wine);font:700 14px "Playfair Display"}
+.record p{font-size:10px;line-height:1.7;color:#755f64;margin:5px 0}
+.record label{display:block;font-size:10px;font-weight:700;margin:10px 0 5px}
+.record input,.record select,.record textarea{
+  width:100%;padding:10px;border:1px solid var(--line);
+  border-radius:8px;font-size:10px;background:white
+}
+.record button{border:0;background:var(--wine);color:white;border-radius:8px;padding:9px 13px;margin-top:10px;font-size:10px}
+.status-pill{
+  display:inline-block;background:#f8e9d6;color:#875c27;
+  padding:5px 9px;border-radius:20px;font-size:9px
+}
+.empty{padding:18px;background:#fff8f2;border-radius:10px;color:var(--muted);font-size:11px}
+.footer{padding:18px 5px;color:#9c8582;font-size:9px;display:flex;justify-content:space-between;gap:10px}
+.hidden{display:none!important}
+
+/* CRUD */
+.crud-section{
+  background:#fffdfb;border:1px solid var(--line);
+  border-radius:15px;padding:17px;margin:14px 0
+}
+.crud-heading{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding-bottom:13px;border-bottom:1px solid #f0e3dc;
+  margin-bottom:13px
+}
+.crud-heading h3{margin:0 0 5px}
+.crud-heading small{font-size:10px;color:var(--muted)}
+.crud-count{
+  display:grid;place-items:center;min-width:34px;height:34px;
+  border-radius:50%;background:#f7e6e8;color:var(--wine);font-weight:800
+}
+.crud-record{
+  border:1px solid #f0e2dc;border-radius:12px;
+  padding:15px;margin:12px 0;background:#fffaf7
+}
+.crud-record-head{
+  display:flex;justify-content:space-between;
+  align-items:flex-start;gap:12px
+}
+.crud-record h4{
+  color:var(--wine);font:700 15px "Playfair Display";
+  margin:8px 0 4px
+}
+.crud-record-head small{color:var(--muted);font-size:9px}
+.crud-actions{display:flex;flex-wrap:wrap;gap:7px}
+.crud-actions button{
+  border:0;border-radius:8px;padding:9px 12px;
+  font-size:10px;font-weight:700
+}
+.edit-record,.save-edit{background:var(--wine);color:white}
+.delete-record{background:#f8e4e5;color:#a12b3b}
+.cancel-edit{background:#eee8e4;color:#66545a}
+.crud-fields{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;margin-top:15px
+}
+.crud-fields>div{
+  padding:10px;background:white;border:1px solid #f0e7e1;
+  border-radius:9px;min-width:0
+}
+.crud-fields small{
+  display:block;color:#9a7e7d;font-size:9px;
+  margin-bottom:5px;text-transform:capitalize
+}
+.crud-fields p{
+  margin:0;color:#51323a;font-size:11px;
+  overflow-wrap:anywhere;line-height:1.6
+}
+.edit-form{border-top:1px solid #eadbd8;margin-top:15px;padding-top:14px}
+.edit-form h4{margin-bottom:12px}
+.edit-form label{
+  display:block;font-size:10px;font-weight:700;
+  margin:10px 0 5px;text-transform:capitalize
+}
+.edit-form textarea{
+  width:100%;padding:10px;border:1px solid #eadbd8;
+  border-radius:8px;font:11px "DM Sans";background:white
+}
+.toast{
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  background:#64182d;color:white;padding:13px 18px;
+  border-radius:10px;font-size:11px;box-shadow:0 6px 20px #0002
+}
+
+@media(max-width:1150px){
+  .dashboard-grid{grid-template-columns:1fr 1.5fr}
+  .right-col{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+}
+@media(max-width:760px){
+  .sidebar{width:65px}
+  .brand{padding:12px 2px}
+  .brand-logo{width:42px;height:42px;font-size:23px}
+  .brand h1{font-size:13px;letter-spacing:1px}
+  .brand p,.ornament,.sidebar-bottom,.nav-label{display:none}
+  .nav{padding:5px;gap:4px}
+  .nav button{font-size:0;text-align:center;padding:13px 2px}
+  .nav button::first-letter{font-size:15px}
+  .topbar{padding:0 10px}
+  .profile div{display:none}
+  .content{padding:10px}
+  .hero{padding:23px;min-height:210px}
+  .hero h1{font-size:26px}
+  .hero-decoration{opacity:.35}
+  .stages{grid-template-columns:repeat(2,1fr)}
+  .dashboard-grid{grid-template-columns:1fr}
+  .right-col{display:flex;flex-direction:column}
+  .detail-grid{grid-template-columns:1fr}
+  .progress-grid{grid-template-columns:repeat(2,1fr)}
+  .activity-row{grid-template-columns:1fr;gap:4px}
+  .crud-record-head{flex-direction:column}
+  .crud-fields{grid-template-columns:1fr}
+  #fullMap{height:370px}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand">
+<div class="brand">
+    <img
+        src="/PULEH_visual_screenshot/logo-puleh.png"
+        alt="Logo PULEH"
+        style="
+            display: block !important;
+            width: 90px !important;
+            height: 90px !important;
+            max-width: 90px !important;
+            object-fit: contain;
+            margin: 10px auto 15px;
+        "
+    >
+</div>
+    <h1>PULEH</h1>
+    <p>Psychosocial Unity through<br>Linkage, Empathy and Healing</p>
+  </div>
+  <div class="ornament">❧ ❖ ❧</div>
+
+  <nav class="nav">
+    <button class="active" data-page="home">⌂ Beranda</button>
+    <div class="nav-label">ALUR LAYANAN</div>
+    <button data-page="reach">♧ PULEH REACH</button>
+    <button data-page="assess">▤ PULEH ASSESS</button>
+    <button data-page="care">♡ PULEH CARE</button>
+    <button data-page="hybrid">▣ PULEH HYBRID</button>
+    <button data-page="connect">♧ PULEH CONNECT</button>
+    <button data-page="continue">▣ PULEH CONTINUE</button>
+    <div class="nav-label">PENGELOLAAN</div>
+    <button data-page="map">⌖ Peta Jangkauan</button>
+    <button data-page="library">▧ Pustaka Aktivitas</button>
+    <button data-page="reports">▥ Laporan & Progres</button>
+    <button data-page="government">♧ Rekomendasi Pemerintah</button>
+    <button data-page="about">ⓘ Tentang PULEH</button>
+    <button data-page="howto">☷ Cara Menggunakan</button>
+  </nav>
+  <div class="sidebar-bottom">❖ ❧ ❖<br>BERSAMA MEMBANGUN<br>RUANG AMAN UNTUK PULIH</div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <label class="search">⌕ <input id="searchInput" placeholder="Cari wilayah atau aktivitas..."></label>
+  <div class="profile">
+    <span class="avatar">👩🏻‍⚕️</span>
+    <div><b>Konselor PULEH</b><small>Dashboard layanan</small></div>
+  </div>
+</header>
+
+<div class="content">
+
+<section id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-copy">
+      <div class="kicker">SISTEM DUKUNGAN KONSELOR BERBASIS KOMUNITAS</div>
+      <h1>Selamat Datang di <em>PULEH</em></h1>
+      <p>Sistem Dukungan Konselor untuk Layanan Konseling Krisis Berbasis Komunitas di Aceh.</p>
+      <div class="hero-pills">
+        <span>◎ Terjangkau</span><span>▱ Terintegrasi</span><span>◌ Berkelanjutan</span>
+      </div>
+    </div>
+    <div class="hero-decoration">❀</div>
+  </div>
+
+  <div class="panel workflow">
+    <div class="section-head">
+      <h2>✿ Tahapan Layanan PULEH</h2>
+      <span class="muted">Pilih tahapan untuk membuka layanan</span>
+    </div>
+    <div class="stages">
+      <button class="stage" data-page="reach"><b>1</b><strong>REACH</strong><small>Menjangkau penyintas</small><span>🤝</span></button>
+      <button class="stage" data-page="assess"><b>2</b><strong>ASSESS</strong><small>Memahami kebutuhan</small><span>📋</span></button>
+      <button class="stage" data-page="care"><b>3</b><strong>CARE</strong><small>Memberikan pendampingan</small><span>🫂</span></button>
+      <button class="stage" data-page="connect"><b>4</b><strong>CONNECT</strong><small>Menghubungkan layanan</small><span>🏥</span></button>
+      <button class="stage" data-page="continue"><b>5</b><strong>CONTINUE</strong><small>Menjaga keberlanjutan</small><span>🗓️</span></button>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="panel">
+      <h2>▥ Ringkasan Layanan</h2>
+      <div class="stats-grid">
+        <div class="stat rose"><span>♟</span><b id="statReach">0</b><small>Penyintas terjangkau</small></div>
+        <div class="stat amber"><span>▤</span><b id="statAssess">0</b><small>Asesmen tercatat</small></div>
+        <div class="stat blue"><span>♡</span><b id="statCare">0</b><small>Pendampingan tercatat</small></div>
+        <div class="stat violet"><span>♧</span><b id="statConnect">0</b><small>Rujukan tercatat</small></div>
+      </div>
+      <p class="muted">Data dihitung dari catatan yang tersimpan pada browser ini.</p>
+    </div>
+
+    <div class="panel">
+      <div class="section-head">
+        <h2>⌖ Peta Jangkauan Layanan Aceh</h2>
+        <button data-page="map">Lihat Peta →</button>
+      </div>
+      <div id="homeMap"></div>
+      <div class="legend">
+        <span><i class="dot red"></i> Prioritas verifikasi</span>
+        <span><i class="dot orange"></i> Perlu verifikasi</span>
+        <span><i class="dot green"></i> Pemulihan</span>
+      </div>
+      <div id="homeCoverage"></div>
+    </div>
+
+    <div class="right-col">
+      <div class="quick">
+        <h2>⚡ Aksi Cepat Konselor</h2>
+        <button data-page="reach">＋ Catat penjangkauan baru</button>
+        <button data-page="assess">▤ Buat asesmen awal</button>
+        <button data-page="care">♡ Pilih aktivitas pendampingan</button>
+        <button data-page="hybrid">▣ Jadwalkan sesi hybrid</button>
+        <button data-page="connect">♧ Input rujukan layanan</button>
+        <button data-page="continue">▣ Catat tindak lanjut</button>
+      </div>
+      <div class="panel info">
+        <h2>Informasi Layanan</h2>
+        <p>PULEH menghubungkan konselor, psikolog, relawan, komunitas, dan pemerintah untuk mendukung pemulihan psikososial.</p>
+        <a href="https://www.bnpb.go.id/" target="_blank" rel="noopener noreferrer">Kunjungi BNPB ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel progress-panel">
+    <div class="section-head">
+      <h2>▥ Progres Pendampingan PULEH</h2>
+      <span class="muted">Berdasarkan data tersimpan</span>
+    </div>
+    <div class="progress-grid">
+      <div class="progress-box"><span>REACH</span><b id="countReach">0</b><small>Penjangkauan</small></div>
+      <div class="progress-box"><span>ASSESS</span><b id="countAssess">0</b><small>Asesmen</small></div>
+      <div class="progress-box"><span>CARE</span><b id="countCare">0</b><small>Pendampingan</small></div>
+      <div class="progress-box"><span>HYBRID</span><b id="countHybrid">0</b><small>Sesi hybrid</small></div>
+      <div class="progress-box"><span>CONNECT</span><b id="countConnect">0</b><small>Rujukan</small></div>
+      <div class="progress-box"><span>CONTINUE</span><b id="countContinue">0</b><small>Tindak lanjut</small></div>
+    </div>
+    <h3>Aktivitas Terbaru</h3>
+    <div id="recentActivities"></div>
+  </div>
+</section>
+
+<section id="page-detail" class="page">
+  <div class="detail-hero">
+    <div class="kicker">PORTAL KONSELOR PULEH</div>
+    <h1 id="detailTitle">PULEH</h1>
+    <p id="detailIntro"></p>
+  </div>
+  <div id="detailContent" class="detail-grid"></div>
+</section>
+
+<footer class="footer">
+  <span>PULEH · Jejaring Konseling Krisis Berbasis Komunitas</span>
+  <span>Prototype demonstrasi</span>
+</footer>
+
+</div>
+</main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+/* DATA WILAYAH REFERENSI */
+const places=[
+{name:"Aceh Tengah",lat:4.62,lng:96.85,category:"Prioritas verifikasi"},
+{name:"Nagan Raya",lat:4.17,lng:96.52,category:"Perlu verifikasi"},
+{name:"Aceh Barat Daya",lat:3.82,lng:96.83,category:"Perlu verifikasi"},
+{name:"Pidie Jaya",lat:5.15,lng:96.20,category:"Prioritas verifikasi"},
+{name:"Aceh Selatan",lat:3.00,lng:97.35,category:"Perlu verifikasi"},
+{name:"Aceh Singkil",lat:2.35,lng:97.85,category:"Perlu verifikasi"},
+{name:"Aceh Tamiang",lat:4.25,lng:98.05,category:"Prioritas verifikasi"},
+{name:"Aceh Utara",lat:5.00,lng:97.20,category:"Perlu verifikasi"}
+];
+
+const types=["reach","assess","care","hybrid","connect","continue","government"];
+
+const definitions={
+reach:{
+title:"PULEH REACH",
+intro:"Penjangkauan penyintas melalui relawan, tokoh masyarakat, dan perangkat desa.",
+cards:[
+["Tujuan","Mengidentifikasi warga terdampak yang membutuhkan dukungan psikososial."],
+["Pelaksanaan","Relawan dan konselor melakukan kunjungan komunitas, koordinasi posko, dan pendataan kebutuhan awal."]
+],form:"reach"
+},
+assess:{
+title:"PULEH ASSESS",
+intro:"Memahami kebutuhan dan menentukan prioritas pendampingan oleh petugas sesuai kompetensi.",
+cards:[
+["Fokus asesmen","Keselamatan, kebutuhan emosional, dukungan keluarga, kebutuhan dasar, dan fungsi sehari-hari."],
+["Prinsip","Bukan diagnosis otomatis. Asesmen dilakukan secara profesional dengan persetujuan penyintas."]
+],form:"assess"
+},
+care:{
+title:"PULEH CARE",
+intro:"Pustaka kegiatan psikososial untuk membantu konselor memberikan pendampingan sesuai usia.",
+cards:[
+["Anak","Menggambar tempat aman, bermain kerja sama, dan ekspresi kreatif dengan fasilitator."],
+["Remaja","Pemetaan dukungan sosial, aktivitas kekuatan diri, dan refleksi harapan."],
+["Dewasa","Ruang cerita sukarela, aktivitas sosial, dan grounding sederhana jika sesuai."],
+["Lansia","Percakapan suportif, kegiatan sosial, dan penguatan dukungan keluarga."]
+],form:"care"
+},
+hybrid:{
+title:"PULEH HYBRID",
+intro:"Psikolog atau konselor memberikan sesi daring sementara pendamping komunitas hadir langsung bersama penyintas.",
+cards:[
+["Daring dengan pendamping lokal","Psikolog/konselor terhubung melalui Zoom. Relawan hadir di lokasi membantu akses perangkat dan dukungan langsung."],
+["Tatap muka","Konselor atau psikolog hadir langsung di lokasi penyintas."],
+["Kolaborasi hybrid","Sesi menggabungkan daring dan tatap muka sesuai kebutuhan, persetujuan, dan akses jaringan."],
+["Keamanan sesi","Jaga privasi, persetujuan, dan prosedur jika koneksi terputus."]
+],form:"hybrid"
+},
+connect:{
+title:"PULEH CONNECT",
+intro:"Menghubungkan penyintas dengan psikolog, fasilitas kesehatan, layanan sosial, dan stakeholder.",
+cards:[
+["Mitra profesional","Psikolog, psikiater, Puskesmas, rumah sakit, dan pekerja sosial."],
+["Mitra komunitas","Relawan terlatih, tokoh masyarakat, perangkat desa, dan posko."],
+["Rujukan","Catat mitra tujuan, status koordinasi, dan hasil tindak lanjut."]
+],form:"connect"
+},
+continue:{
+title:"PULEH CONTINUE",
+intro:"Menjaga kesinambungan dukungan melalui pemantauan dan tindak lanjut.",
+cards:[
+["Tindak lanjut","Sepakati jadwal dan cara komunikasi yang aman dan disetujui penyintas."],
+["Pemantauan","Tinjau kebutuhan, dukungan sosial, dan apakah rujukan telah diterima."],
+["Keberlanjutan","Hubungkan penyintas dengan keluarga, komunitas, dan layanan lokal."]
+],form:"continue"
+},
+map:{
+title:"PETA JANGKAUAN ACEH",
+intro:"Peta referensi wilayah untuk membantu konselor merencanakan koordinasi dan verifikasi lapangan.",
+cards:[
+["Catatan peta","Titik menunjukkan pusat referensi wilayah administratif, bukan lokasi rumah penyintas, posko, atau titik genangan."],
+["Verifikasi","Status kejadian dan kebutuhan psikososial harus diperbarui berdasarkan sumber resmi dan laporan lapangan."]
+]
+},
+library:{
+title:"PUSTAKA AKTIVITAS",
+intro:"Panduan kegiatan tatap muka maupun menggunakan kartu cetak ketika teknologi tidak tersedia.",
+cards:[
+["Anak: Pulau Aman","Ajak anak menggambar tempat yang membuatnya merasa aman dan orang yang dapat dipercaya. Tidak memaksa anak menceritakan pengalaman bencana."],
+["Remaja: Peta Dukungan","Ajak remaja mengenali orang dan tempat yang dapat menjadi sumber dukungan."],
+["Dewasa: Jeda dan Grounding","Latihan sederhana mengenali lingkungan saat ini jika sesuai dengan kondisi dan persetujuan peserta."],
+["Lansia: Ruang Cerita","Percakapan sukarela, dukungan sosial, dan aktivitas bersama."]
+]
+},
+reports:{
+title:"LAPORAN & PROGRES",
+intro:"Kelola catatan penjangkauan, asesmen, pendampingan, sesi hybrid, rujukan, tindak lanjut, dan rekomendasi pemerintah."
+},
+government:{
+    title:"REKOMENDASI PEMERINTAH",
+    intro:"Menyusun rekomendasi kebutuhan psikososial dan memantau tindak lanjut oleh instansi terkait.",
+    cards:[
+        ["Dari temuan ke rekomendasi","Rekomendasi harus didukung temuan lapangan yang dapat diverifikasi."],
+        ["Instansi tujuan","Pemerintah daerah, BPBD, Dinas Kesehatan, Dinas Sosial, Puskesmas, dan Dinas Pendidikan."],
+        ["Tahap tindak lanjut","Draf, verifikasi, dikirim, menunggu respons, ditindaklanjuti, dan selesai dievaluasi."]
+    ],form:"government"
+},
+
+about:{
+    title:"TENTANG PULEH",
+    intro:"Mengenal PULEH sebagai sistem dukungan konselor untuk layanan konseling krisis berbasis komunitas di Aceh.",
+    cards:[
+        ["Apa Itu PULEH?","PULEH (Psychosocial Unity through Linkage, Empathy and Healing) merupakan platform dukungan konselor berbasis komunitas yang dirancang untuk membantu proses pemulihan psikososial masyarakat terdampak bencana."],
+
+        ["Latar Belakang","Bencana tidak hanya menyebabkan kerusakan fisik dan material, tetapi juga dapat memengaruhi kondisi emosional dan psikososial masyarakat. Keterbatasan tenaga profesional, akses layanan, serta jangkauan pendampingan menjadi tantangan dalam proses pemulihan."],
+
+        ["Tujuan PULEH","Mendukung penjangkauan penyintas, identifikasi kebutuhan psikososial, pendampingan, koordinasi rujukan, serta pemantauan keberlanjutan layanan."],
+
+        ["REACH – Menjangkau","Membantu konselor dan relawan menjangkau masyarakat terdampak serta mengidentifikasi kebutuhan awal."],
+
+        ["ASSESS – Memahami","Membantu pencatatan kebutuhan dan kondisi penyintas sebagai dasar penentuan pendampingan."],
+
+        ["CARE – Mendampingi","Menyediakan panduan aktivitas psikososial berdasarkan kelompok usia dan kebutuhan penyintas."],
+
+        ["HYBRID – Kolaborasi","Menghubungkan psikolog atau konselor secara daring melalui Zoom dengan pendamping komunitas yang hadir langsung bersama penyintas."],
+
+        ["CONNECT – Menghubungkan","Memfasilitasi koordinasi dan rujukan kepada psikolog, Puskesmas, rumah sakit, serta layanan terkait."],
+
+        ["CONTINUE – Melanjutkan","Mendukung pemantauan dan tindak lanjut agar proses pendampingan tidak berhenti pada layanan awal."],
+
+        ["Prinsip PULEH","PULEH mengutamakan empati, keselamatan, persetujuan penyintas, perlindungan privasi, kolaborasi, dan keberlanjutan layanan."],
+
+        ["Sasaran Pengguna","Platform ini ditujukan untuk membantu konselor, psikolog, relawan terlatih, pendamping komunitas, dan pihak terkait dalam koordinasi layanan psikososial."]
+    ]
+},
+
+howto:{
+    title:"CARA MENGGUNAKAN PULEH",
+    intro:"Panduan penggunaan platform PULEH bagi konselor, psikolog, dan pendamping komunitas.",
+    cards:[
+        ["01. Mulai dari Beranda","Buka halaman Beranda untuk melihat ringkasan layanan, tahapan pendampingan, peta referensi wilayah, dan aktivitas yang telah tercatat."],
+
+        ["02. PULEH REACH – Penjangkauan","Pilih menu REACH untuk mencatat wilayah, petugas, kelompok masyarakat yang dijangkau, serta jumlah warga yang dijangkau."],
+
+        ["03. PULEH ASSESS – Asesmen","Pilih menu ASSESS untuk mencatat kebutuhan utama penyintas menggunakan kode anonim. Tentukan tindak lanjut berdasarkan hasil asesmen dan kompetensi petugas."],
+
+        ["04. PULEH CARE – Pendampingan","Pilih menu CARE untuk mencatat aktivitas pendampingan. Sesuaikan kegiatan dengan kelompok usia, seperti menggambar tempat aman untuk anak, peta dukungan untuk remaja, dan aktivitas sosial untuk dewasa maupun lansia."],
+
+        ["05. PULEH HYBRID – Sesi Pendampingan","Pilih menu HYBRID untuk mencatat jadwal dan metode pendampingan. Pada sesi daring, psikolog atau konselor terhubung melalui Zoom sementara pendamping komunitas hadir secara fisik bersama penyintas."],
+
+        ["06. PULEH CONNECT – Rujukan","Pilih menu CONNECT untuk mencatat mitra rujukan, status koordinasi, dan kebutuhan layanan lanjutan seperti psikolog, Puskesmas, rumah sakit, atau Dinas Sosial."],
+
+        ["07. PULEH CONTINUE – Tindak Lanjut","Pilih menu CONTINUE untuk mencatat jadwal pemantauan, hasil tindak lanjut, dan kebutuhan pendampingan berikutnya."],
+
+        ["08. Peta Jangkauan","Gunakan menu Peta Jangkauan untuk melihat titik referensi wilayah administratif di Aceh. Titik tersebut bukan lokasi pasti penyintas, posko, atau bencana dan tetap memerlukan verifikasi lapangan."],
+
+        ["09. Pustaka Aktivitas","Buka Pustaka Aktivitas untuk melihat referensi kegiatan psikososial yang dapat digunakan oleh pendamping sesuai kelompok usia."],
+
+        ["10. Laporan dan Progres","Gunakan menu Laporan dan Progres untuk meninjau catatan layanan, melihat aktivitas yang telah dilakukan, serta mengelola data yang tersimpan."],
+
+        ["11. Rekomendasi Pemerintah","Gunakan menu Rekomendasi Pemerintah untuk menyusun usulan program berdasarkan temuan lapangan yang telah diverifikasi."],
+
+        ["Catatan Penting","Gunakan kode anonim dan hindari memasukkan identitas pribadi penyintas. Pastikan persetujuan sebelum pendampingan dan jaga kerahasiaan informasi. Data pada versi prototype ini tersimpan di browser yang digunakan."]
+    ]
+}
+};
+
+/* PENYIMPANAN */
+function getRecords(type){
+  try{return JSON.parse(localStorage.getItem("puleh_"+type)||"[]")}
+  catch{return []}
+}
+function saveRecords(type,records){
+  localStorage.setItem("puleh_"+type,JSON.stringify(records))
+}
+function escapeHTML(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  })[c])
+}
+function showToast(message){
+  document.querySelector(".toast")?.remove();
+  const el=document.createElement("div");
+  el.className="toast";el.textContent=message;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3000)
+}
+
+/* FORMULIR */
+function formMarkup(type){
+let fields="";
+
+if(type==="reach"){
+fields=`
+<label>Wilayah penjangkauan</label>
+<select name="area" required><option value="">Pilih wilayah</option>
+${places.map(p=>`<option>${p.name}</option>`).join("")}</select>
+<label>Nama/kode petugas</label><input name="officer" required placeholder="Kode relawan atau konselor">
+<label>Kelompok yang dijangkau</label>
+<select name="group"><option>Individu/keluarga</option><option>Anak</option><option>Remaja</option><option>Dewasa</option><option>Lansia</option></select>
+<label>Jumlah warga yang dijangkau</label><input type="number" name="quantity" min="1" required>
+<label>Catatan singkat</label><textarea name="note" rows="2"></textarea>`;
+}
+
+if(type==="assess"){
+fields=`
+<label>Kode catatan anonim</label><input name="code" required placeholder="Contoh: PUL-001">
+<label>Wilayah</label><select name="area" required><option value="">Pilih wilayah</option>${places.map(p=>`<option>${p.name}</option>`).join("")}</select>
+<label>Kebutuhan utama</label><select name="need"><option>Dukungan emosional</option><option>Kebutuhan dasar dan rasa aman</option><option>Dukungan keluarga</option><option>Perlu konsultasi profesional</option></select>
+<label>Tindak lanjut konselor</label><select name="priority"><option>Pendampingan rutin</option><option>Perlu peninjauan segera</option><option>Koordinasi rujukan profesional</option></select>`;
+}
+
+if(type==="care"){
+fields=`
+<label>Kode catatan anonim</label><input name="code" required placeholder="Kode penyintas">
+<label>Kelompok usia</label><select name="age"><option>Anak 4–12 tahun</option><option>Remaja 13–17 tahun</option><option>Dewasa 18–59 tahun</option><option>Lansia 60 tahun ke atas</option></select>
+<label>Aktivitas</label><select name="activity"><option>Pulau Aman - menggambar tempat aman</option><option>Peta Dukungan - mengenali sumber dukungan</option><option>Jeda dan Grounding</option><option>Ruang Cerita</option><option>Aktivitas kelompok komunitas</option></select>
+<label>Catatan fasilitator</label><textarea name="note" rows="2"></textarea>`;
+}
+
+if(type==="hybrid"){
+fields=`
+<label>Kode catatan anonim</label><input name="code" required>
+<label>Wilayah</label><select name="area" required><option value="">Pilih wilayah</option>${places.map(p=>`<option>${p.name}</option>`).join("")}</select>
+<label>Metode</label><select name="mode"><option>Daring dengan pendamping lokal</option><option>Tatap muka</option><option>Kombinasi daring dan tatap muka</option></select>
+<label>Psikolog/konselor</label><input name="professional" required>
+<label>Pendamping di lokasi</label><input name="helper" required>
+<label>Jadwal sesi</label><input type="datetime-local" name="schedule" required>
+<label>Link Zoom</label><input type="url" name="zoomLink" placeholder="https://zoom.us/j/...">
+<span class="hint">Pendamping komunitas hadir bersama penyintas. Pastikan privasi, persetujuan, dan prosedur jika koneksi terputus.</span>`;
+}
+
+if(type==="connect"){
+fields=`
+<label>Kode catatan anonim</label><input name="code" required>
+<label>Mitra rujukan</label><select name="partner"><option>Psikolog/psikiater</option><option>Puskesmas</option><option>Rumah sakit</option><option>Dinas Sosial</option><option>Relawan/komunitas</option><option>BPBD</option></select>
+<label>Status rujukan</label><select name="status"><option>Perlu dihubungi</option><option>Sudah dikoordinasikan</option><option>Rujukan diterima</option><option>Perlu tindak lanjut</option></select>
+<label>Catatan koordinasi</label><textarea name="note" rows="2"></textarea>`;
+}
+
+if(type==="continue"){
+fields=`
+<label>Kode catatan anonim</label><input name="code" required>
+<label>Tanggal tindak lanjut</label><input type="date" name="date" required>
+<label>Hasil pemantauan</label><select name="result"><option>Dukungan berjalan</option><option>Masih membutuhkan pendampingan</option><option>Perlu rujukan lanjutan</option><option>Belum berhasil dihubungi</option></select>
+<label>Catatan tindak lanjut</label><textarea name="note" rows="2"></textarea>`;
+}
+
+if(type==="government"){
+fields=`
+<label>Wilayah prioritas</label><select name="area" required><option value="">Pilih wilayah</option>${places.map(p=>`<option>${p.name}</option>`).join("")}</select>
+<label>Temuan kebutuhan psikososial</label><select name="finding"><option>Keterbatasan tenaga psikolog/konselor</option><option>Kurangnya layanan konseling di pengungsian</option><option>Anak membutuhkan ruang aman psikososial</option><option>Kurangnya dukungan kelompok komunitas</option><option>Akses layanan kesehatan mental terbatas</option><option>Relawan membutuhkan pelatihan PFA</option><option>Tindak lanjut psikososial belum optimal</option></select>
+<label>Rekomendasi program</label><select name="program"><option>Penambahan psikolog dan konselor lapangan</option><option>Layanan konseling keliling</option><option>Penyediaan ruang aman psikososial anak</option><option>Program dukungan kelompok komunitas</option><option>Pelatihan PFA untuk relawan</option><option>Penguatan layanan rujukan Puskesmas</option><option>Pemantauan psikososial jangka panjang</option></select>
+<label>Instansi tujuan</label><select name="agency"><option>Pemerintah Kabupaten/Kota</option><option>BPBD</option><option>Dinas Kesehatan</option><option>Dinas Sosial</option><option>Dinas Pendidikan</option><option>Puskesmas</option></select>
+<label>Dasar temuan lapangan</label><textarea name="evidence" rows="3" required placeholder="Tuliskan ringkasan bukti atau data agregat terverifikasi"></textarea>
+<label>Indikator keberhasilan</label><input name="indicator" required placeholder="Contoh: peningkatan jangkauan layanan">
+<label>Status awal</label><select name="status"><option>Draf</option><option>Verifikasi</option></select>`;
+}
+
+return `<article class="card">
+<h3>${type==="hybrid"?"Atur Sesi Pendampingan Hybrid":type==="government"?"Susun Rekomendasi Pemerintah":"Tambah Catatan Layanan"}</h3>
+<form class="data-form" data-type="${type}">${fields}
+<button class="primary-btn" type="submit">Simpan Data</button>
+</form><div class="message" aria-live="polite"></div>
+${type==="hybrid"?'<button class="secondary-btn" type="button" id="openZoom">▶ Buka Ruang Zoom</button>':""}
+${type==="government"?'<button class="secondary-btn" type="button" id="downloadDraft">↓ Unduh Draf Rekomendasi</button>':""}
+</article>`;
+}
+
+/* NAVIGASI */
+let homeMap=null,fullMap=null;
+
+function navigate(page){
+document.querySelectorAll(".nav button[data-page]").forEach(b=>{
+b.classList.toggle("active",b.dataset.page===page)
+});
+document.getElementById("page-home").classList.toggle("active",page==="home");
+document.getElementById("page-detail").classList.toggle("active",page!=="home");
+
+if(page==="home"){
+setTimeout(()=>homeMap?.invalidateSize(),150);
+renderDashboard();window.scrollTo({top:0,behavior:"smooth"});return;
+}
+
+const data=definitions[page];
+if(!data)return;
+
+document.getElementById("detailTitle").textContent=data.title;
+document.getElementById("detailIntro").textContent=data.intro;
+
+const content=document.getElementById("detailContent");
+content.innerHTML=(data.cards||[]).map(c=>`
+<article class="card"><h3>${escapeHTML(c[0])}</h3><p>${escapeHTML(c[1])}</p></article>`).join("");
+
+if(data.form)content.innerHTML+=formMarkup(data.form);
+
+if(page==="reports"){
+content.innerHTML=`
+<article class="card full">
+<div class="section-head"><h3>Rekapitulasi Catatan Layanan</h3>
+<span class="muted">Kelola semua data PULEH</span></div>
+<div id="reportRecords"></div>
+</article>`;
+renderReportDetails();
+}
+
+if(page==="map"){
+content.innerHTML+=`
+<article class="card full">
+<h3>Peta Wilayah Referensi</h3>
+<div id="fullMap"></div>
+<div id="fullCoverage"></div>
+</article>`;
+setTimeout(()=>{
+if(!fullMap)fullMap=createMap("fullMap");
+else fullMap.invalidateSize();
+renderCoverage("fullCoverage");
+},200);
+}
+
+if(page==="government")renderGovernmentRecords();
+window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.addEventListener("click",e=>{
+const button=e.target.closest("[data-page]");
+if(button)navigate(button.dataset.page);
+});
+
+/* CREATE */
+document.addEventListener("submit",e=>{
+const form=e.target.closest(".data-form");
+if(!form)return;
+e.preventDefault();
+
+const type=form.dataset.type;
+const data=Object.fromEntries(new FormData(form).entries());
+
+if(type==="hybrid" && data.mode!=="Tatap muka" && !data.zoomLink){
+showToast("Masukkan link Zoom untuk sesi daring.");return;
+}
+if(type==="government" && !data.evidence.trim()){
+showToast("Dasar temuan lapangan wajib diisi.");return;
+}
+
+data.createdAt=new Date().toISOString();
+data.id=Date.now().toString();
+
+const records=getRecords(type);
+records.unshift(data);
+saveRecords(type,records);
+
+form.reset();
+form.parentElement.querySelector(".message").textContent="Data berhasil disimpan.";
+renderDashboard();
+showToast("Data berhasil disimpan.");
+});
+
+/* ZOOM DAN DRAF */
+document.addEventListener("click",e=>{
+if(e.target.id==="openZoom"){
+const input=document.querySelector('[name="zoomLink"]');
+if(!input?.value.trim()){showToast("Isi link Zoom terlebih dahulu.");return}
+try{
+const url=new URL(input.value);
+if(url.protocol!=="https:"||!url.hostname.endsWith("zoom.us"))throw Error();
+window.open(url.href,"_blank","noopener,noreferrer");
+}catch{showToast("Link Zoom tidak valid.")}
+}
+
+if(e.target.id==="downloadDraft"){
+const form=document.querySelector('.data-form[data-type="government"]');
+if(!form)return;
+const d=Object.fromEntries(new FormData(form).entries());
+if(!d.area||!d.evidence||!d.indicator){showToast("Lengkapi data rekomendasi.");return}
+downloadText("Draf_Rekomendasi_PULEH.txt",
+`DRAF REKOMENDASI PULEH\nWilayah: ${d.area}\nTemuan: ${d.finding}\nProgram: ${d.program}\nInstansi: ${d.agency}\nDasar temuan: ${d.evidence}\nIndikator: ${d.indicator}\n\nDraf ini perlu diverifikasi sebelum dikirim secara resmi.`);
+}
+});
+
+/* CRUD READ */
+function renderReportDetails(){
+const container=document.getElementById("reportRecords");
+if(!container)return;
+
+const labels={
+reach:"PULEH REACH",assess:"PULEH ASSESS",care:"PULEH CARE",
+hybrid:"PULEH HYBRID",connect:"PULEH CONNECT",
+continue:"PULEH CONTINUE",government:"PULEH GOVERNMENT"
+};
+
+let html="";
+
+types.forEach(type=>{
+const records=getRecords(type);
+html+=`<section class="crud-section">
+<div class="crud-heading">
+<div><h3>${labels[type]}</h3><small>${records.length} catatan tersimpan</small></div>
+<span class="crud-count">${records.length}</span>
+</div>`;
+
+if(!records.length){
+html+=`<div class="empty">Belum ada data. Tambahkan melalui menu layanan.</div>`;
+}
+
+records.forEach(r=>{
+const fields=Object.entries(r).filter(([key])=>
+!["id","createdAt","updatedAt"].includes(key)
+);
+
+html+=`<article class="crud-record">
+<div class="crud-record-head">
+<div>
+<span class="status-pill">${labels[type]}</span>
+<h4>${escapeHTML(r.area||r.code||r.program||r.activity||"Catatan layanan")}</h4>
+<small>Dibuat: ${r.createdAt?new Date(r.createdAt).toLocaleString("id-ID"):"-"}</small>
+</div>
+<div class="crud-actions">
+<button class="edit-record" data-type="${type}" data-id="${escapeHTML(r.id)}">✎ Edit</button>
+<button class="delete-record" data-type="${type}" data-id="${escapeHTML(r.id)}">× Hapus</button>
+</div>
+</div>
+
+<div class="crud-fields">
+${fields.map(([key,value])=>`
+<div><small>${escapeHTML(key)}</small><p>${escapeHTML(value||"-")}</p></div>
+`).join("")}
+</div>
+
+<form class="edit-form hidden" data-type="${type}" data-id="${escapeHTML(r.id)}">
+<h4>Edit Catatan</h4>
+${fields.map(([key,value])=>`
+<label>${escapeHTML(key)}</label>
+<textarea name="${escapeHTML(key)}" rows="2">${escapeHTML(value??"")}</textarea>
+`).join("")}
+<div class="crud-actions">
+<button type="submit" class="save-edit">Simpan Perubahan</button>
+<button type="button" class="cancel-edit">Batal</button>
+</div>
+</form>
+</article>`;
+});
+
+html+="</section>";
+});
+container.innerHTML=html;
+}
+
+/* CRUD UPDATE: BUKA FORM EDIT */
+document.addEventListener("click",e=>{
+const button=e.target.closest(".edit-record");
+if(!button)return;
+const {type,id}=button.dataset;
+const form=[...document.querySelectorAll(".edit-form")].find(f=>
+f.dataset.type===type&&f.dataset.id===id
+);
+if(form){
+form.classList.toggle("hidden");
+form.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+});
+
+/* BATAL EDIT */
+document.addEventListener("click",e=>{
+const button=e.target.closest(".cancel-edit");
+if(button)button.closest(".edit-form").classList.add("hidden");
+});
+
+/* SIMPAN EDIT */
+document.addEventListener("submit",e=>{
+const form=e.target.closest(".edit-form");
+if(!form)return;
+e.preventDefault();
+
+const {type,id}=form.dataset;
+const records=getRecords(type);
+const index=records.findIndex(r=>r.id===id);
+if(index<0){showToast("Data tidak ditemukan.");return}
+
+const changes=Object.fromEntries(new FormData(form).entries());
+records[index]={...records[index],...changes,updatedAt:new Date().toISOString()};
+saveRecords(type,records);
+renderReportDetails();renderDashboard();
+showToast("Perubahan berhasil disimpan.");
+});
+
+/* DELETE */
+document.addEventListener("click",e=>{
+const button=e.target.closest(".delete-record");
+if(!button)return;
+const {type,id}=button.dataset;
+
+if(!confirm("Yakin ingin menghapus catatan ini?"))return;
+
+saveRecords(type,getRecords(type).filter(r=>r.id!==id));
+renderReportDetails();renderDashboard();
+showToast("Catatan berhasil dihapus.");
+});
+
+/* REKOMENDASI PEMERINTAH */
+function renderGovernmentRecords(){
+const container=document.getElementById("governmentRecords");
+if(!container)return;
+const records=getRecords("government");
+
+if(!records.length){
+container.innerHTML='<div class="empty">Belum ada rekomendasi.</div>';return;
+}
+
+container.innerHTML=records.map(r=>`
+<div class="record">
+<h4>${escapeHTML(r.program)}</h4>
+<p><b>Wilayah:</b> ${escapeHTML(r.area)}</p>
+<p><b>Instansi:</b> ${escapeHTML(r.agency)}</p>
+<p><b>Temuan:</b> ${escapeHTML(r.finding)}</p>
+<p><b>Dasar:</b> ${escapeHTML(r.evidence)}</p>
+<label>Status tindak lanjut</label>
+<select class="gov-status" data-id="${escapeHTML(r.id)}">
+${["Draf","Verifikasi","Dikirim","Menunggu respons","Ditindaklanjuti","Selesai"].map(s=>`<option ${r.status===s?"selected":""}>${s}</option>`).join("")}
+</select>
+<label>Catatan perkembangan</label>
+<textarea class="gov-note" data-id="${escapeHTML(r.id)}" rows="2">${escapeHTML(r.followup||"")}</textarea>
+<button class="save-gov" data-id="${escapeHTML(r.id)}">Simpan perkembangan</button>
+</div>`).join("");
+}
+
+document.addEventListener("click",e=>{
+const button=e.target.closest(".save-gov");
+if(!button)return;
+const records=getRecords("government");
+const r=records.find(x=>x.id===button.dataset.id);
+if(!r)return;
+r.status=document.querySelector(`.gov-status[data-id="${CSS.escape(r.id)}"]`).value;
+r.followup=document.querySelector(`.gov-note[data-id="${CSS.escape(r.id)}"]`).value;
+r.updatedAt=new Date().toISOString();
+saveRecords("government",records);
+renderGovernmentRecords();
+showToast("Tindak lanjut diperbarui.");
+});
+
+/* DASHBOARD */
+function renderDashboard(){
+const counts={};
+types.forEach(t=>counts[t]=getRecords(t).length);
+
+const ids={
+statReach:counts.reach,statAssess:counts.assess,
+statCare:counts.care+counts.hybrid,statConnect:counts.connect,
+countReach:counts.reach,countAssess:counts.assess,
+countCare:counts.care,countHybrid:counts.hybrid,
+countConnect:counts.connect,countContinue:counts.continue
+};
+
+Object.entries(ids).forEach(([id,value])=>{
+const el=document.getElementById(id);
+if(el)el.textContent=value;
+});
+
+const all=types.flatMap(type=>getRecords(type).map(r=>({
+type:type.toUpperCase(),
+label:r.area||r.code||r.program||"Catatan",
+time:r.createdAt||""
+}))).sort((a,b)=>new Date(b.time)-new Date(a.time));
+
+const box=document.getElementById("recentActivities");
+if(box){
+box.innerHTML=all.length?all.slice(0,8).map(r=>`
+<div class="activity-row"><b>${escapeHTML(r.type)}</b>
+<span>${escapeHTML(r.label)}</span>
+<small>${r.time?new Date(r.time).toLocaleString("id-ID"):"-"}</small></div>
+`).join(""):'<div class="empty">Belum ada aktivitas. Mulai dengan mencatat penjangkauan REACH.</div>';
+}
+}
+
+/* PETA */
+function createMap(id){
+if(!window.L)return null;
+const map=L.map(id,{scrollWheelZoom:false}).setView([4.45,96.9],7);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+maxZoom:18,attribution:"© OpenStreetMap contributors"
+}).addTo(map);
+
+places.forEach(p=>{
+const color=p.category==="Prioritas verifikasi"?"#cb4354":"#e9943b";
+L.circleMarker([p.lat,p.lng],{
+radius:8,color:"#fff",weight:2,fillColor:color,fillOpacity:.95
+}).addTo(map).bindPopup(`<b>${escapeHTML(p.name)}</b><p>${escapeHTML(p.category)}</p><small>Titik referensi administratif, perlu verifikasi lapangan.</small>`);
+});
+return map;
+}
+
+function renderCoverage(id){
+const box=document.getElementById(id);
+if(!box)return;
+box.innerHTML=`<h3>Wilayah Referensi Jangkauan</h3>
+${places.map(p=>`
+<div class="coverage-item">
+<i class="coverage-dot" style="background:${p.category==="Prioritas verifikasi"?"#cb4354":"#e9943b"}"></i>
+<div><b>${escapeHTML(p.name)}</b><small>Perlu verifikasi berdasarkan laporan lapangan</small></div>
+<em>${escapeHTML(p.category)}</em>
+</div>`).join("")}
+<p class="muted">Titik merupakan referensi administratif, bukan lokasi penyintas, posko, atau genangan. Verifikasi menggunakan informasi resmi dan laporan lapangan sebelum wilayah ditetapkan sebagai cakupan layanan.</p>`;
+}
+
+/* UTILITAS */
+function downloadText(filename,text){
+const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");a.href=url;a.download=filename;a.click();
+URL.revokeObjectURL(url);
+}
+
+document.getElementById("searchInput").addEventListener("keydown",e=>{
+if(e.key!=="Enter")return;
+const query=e.target.value.trim().toLowerCase();
+const match=places.find(p=>p.name.toLowerCase().includes(query));
+if(match){navigate("map");showToast("Wilayah ditemukan: "+match.name)}
+else showToast("Masukkan nama wilayah Aceh.");
+});
+
+/* MULAI APLIKASI */
+window.addEventListener("load",()=>{
+renderDashboard();
+renderCoverage("homeCoverage");
+if(window.L)homeMap=createMap("homeMap");
+else document.getElementById("homeMap").innerHTML=
+'<div class="empty">Peta membutuhkan koneksi internet.</div>';
+});
+</script>
+</body>
+</html>
